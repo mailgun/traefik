@@ -75,8 +75,8 @@
             "scheme": "foo",
             "path": "foo",
             "port": 42,
-            "interval": "foo",
-            "timeout": "foo",
+            "interval": "1s",
+            "timeout": "1s",
             "hostname": "xxxx",
             "followRedirects": true,
             "headers": {
@@ -85,7 +85,7 @@
           },
           "passHostHeader": true,
           "responseForwarding": {
-            "flushInterval": "foo"
+            "flushInterval": "100ms"
           },
           "serversTransport": "foo"
         }
