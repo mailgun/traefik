@@ -644,8 +644,8 @@ func Test_buildConfiguration(t *testing.T) {
 							Scheme:          "foobar",
 							Path:            "foobar",
 							Port:            42,
-							Interval:        "foobar",
-							Timeout:         "foobar",
+							Interval:        ptypes.Duration(time.Second),
+							Timeout:         ptypes.Duration(time.Second),
 							Hostname:        "foobar",
 							FollowRedirects: func(v bool) *bool { return &v }(true),
 							Headers: map[string]string{
@@ -655,7 +655,7 @@ func Test_buildConfiguration(t *testing.T) {
 						},
 						PassHostHeader: func(v bool) *bool { return &v }(true),
 						ResponseForwarding: &dynamic.ResponseForwarding{
-							FlushInterval: "foobar",
+							FlushInterval: ptypes.Duration(100 * time.Millisecond),
 						},
 					},
 				},
