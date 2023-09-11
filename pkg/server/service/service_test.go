@@ -338,7 +338,8 @@ func TestGetLoadBalancerServiceHandler(t *testing.T) {
 	for _, test := range testCases {
 		test := test
 		t.Run(test.desc, func(t *testing.T) {
-			handler, err := sm.getLoadBalancerServiceHandler(context.Background(), test.serviceName, test.service)
+			serviceInfo := runtime.ServiceInfo{Service: &dynamic.Service{LoadBalancer: test.service}}
+			handler, err := sm.getLoadBalancerServiceHandler(context.Background(), test.serviceName, &serviceInfo)
 
 			assert.NoError(t, err)
 			assert.NotNil(t, handler)
@@ -409,14 +410,10 @@ func Test1xxResponses(t *testing.T) {
 	}))
 	t.Cleanup(backend.Close)
 
-	config := &dynamic.ServersLoadBalancer{
-		Servers: []dynamic.Server{
-			{
-				URL: backend.URL,
-			},
-		},
-	}
-	handler, err := sm.getLoadBalancerServiceHandler(context.Background(), "foobar", config)
+	serviceInfo := runtime.ServiceInfo{Service: &dynamic.Service{LoadBalancer: &dynamic.ServersLoadBalancer{
+		Servers: []dynamic.Server{{URL: backend.URL}},
+	}}}
+	handler, err := sm.getLoadBalancerServiceHandler(context.Background(), "foobar", &serviceInfo)
 	assert.Nil(t, err)
 
 	frontend := httptest.NewServer(handler)
