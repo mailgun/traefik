@@ -31,6 +31,8 @@ type RouterFactory struct {
 
 	chainBuilder *middleware.ChainBuilder
 	tlsManager   *tls.Manager
+
+	cancelPrevState func()
 }
 
 // NewRouterFactory creates a new RouterFactory.
@@ -65,7 +67,12 @@ func NewRouterFactory(staticConfiguration static.Configuration, managerFactory *
 
 // CreateRouters creates new TCPRouters and UDPRouters.
 func (f *RouterFactory) CreateRouters(rtConf *runtime.Configuration) (map[string]*tcprouter.Router, map[string]udptypes.Handler) {
-	ctx := context.Background()
+	if f.cancelPrevState != nil {
+		f.cancelPrevState()
+	}
+
+	var ctx context.Context
+	ctx, f.cancelPrevState = context.WithCancel(context.Background())
 
 	// HTTP
 	serviceManager := f.managerFactory.Build(rtConf)
