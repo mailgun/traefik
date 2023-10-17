@@ -296,7 +296,11 @@ func (m *Manager) getLoadBalancerServiceHandler(ctx context.Context, serviceName
 
 		proxy := buildSingleHostProxy(target, passHostHeader, time.Duration(flushInterval), roundTripper, m.bufferPool)
 
-		proxy = accesslog.NewFieldHandler(proxy, accesslog.ServiceURL, target.String(), nil)
+		// FIXME: Traefik v2.6.x that is currently in prod defines ServiceURL
+		//  field as object where as the v3.x.x. branch converted it to string.
+		//  to allow both versions coexist in production ServiceURL is renamed
+		//  to ServiceURLRaw.
+		proxy = accesslog.NewFieldHandler(proxy, "ServiceURLRaw", target.String(), nil)
 		proxy = accesslog.NewFieldHandler(proxy, accesslog.ServiceAddr, target.Host, nil)
 		proxy = accesslog.NewFieldHandler(proxy, accesslog.ServiceName, serviceName, nil)
 
