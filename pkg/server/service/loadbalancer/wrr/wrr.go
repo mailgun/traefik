@@ -184,8 +184,6 @@ func (b *Balancer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	log.WithoutContext().Infof("Acquired handler: %+v\n", nh)
-
 	if b.stickyCookie != nil {
 		cookie := &http.Cookie{
 			Name:     b.stickyCookie.name,
