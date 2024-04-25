@@ -24,63 +24,6 @@ func (MockForwarder) ServeHTTP(http.ResponseWriter, *http.Request) {
 	panic("implement me")
 }
 
-func TestGetLoadBalancer(t *testing.T) {
-	sm := Manager{}
-
-	testCases := []struct {
-		desc        string
-		serviceName string
-		service     *dynamic.ServersLoadBalancer
-		fwd         http.Handler
-		expectError bool
-	}{
-		{
-			desc:        "Fails when provided an invalid URL",
-			serviceName: "test",
-			service: &dynamic.ServersLoadBalancer{
-				Servers: []dynamic.Server{
-					{
-						URL: ":",
-					},
-				},
-			},
-			fwd:         &MockForwarder{},
-			expectError: true,
-		},
-		{
-			desc:        "Succeeds when there are no servers",
-			serviceName: "test",
-			service:     &dynamic.ServersLoadBalancer{},
-			fwd:         &MockForwarder{},
-			expectError: false,
-		},
-		{
-			desc:        "Succeeds when sticky.cookie is set",
-			serviceName: "test",
-			service: &dynamic.ServersLoadBalancer{
-				Sticky: &dynamic.Sticky{Cookie: &dynamic.Cookie{}},
-			},
-			fwd:         &MockForwarder{},
-			expectError: false,
-		},
-	}
-
-	for _, test := range testCases {
-		t.Run(test.desc, func(t *testing.T) {
-			t.Parallel()
-
-			handler, err := sm.getLoadBalancer(context.Background(), test.serviceName, test.service, test.fwd)
-			if test.expectError {
-				require.Error(t, err)
-				assert.Nil(t, handler)
-			} else {
-				require.NoError(t, err)
-				assert.NotNil(t, handler)
-			}
-		})
-	}
-}
-
 func TestGetLoadBalancerServiceHandler(t *testing.T) {
 	sm := NewManager(nil, nil, nil, &RoundTripperManager{
 		roundTrippers: map[string]http.RoundTripper{
@@ -336,7 +279,8 @@ func TestGetLoadBalancerServiceHandler(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			handler, err := sm.getLoadBalancerServiceHandler(context.Background(), test.serviceName, test.service)
+			serviceInfo := runtime.ServiceInfo{Service: &dynamic.Service{LoadBalancer: test.service}}
+			handler, err := sm.getLoadBalancerServiceHandler(context.Background(), test.serviceName, &serviceInfo)
 
 			assert.NoError(t, err)
 			assert.NotNil(t, handler)
@@ -414,7 +358,8 @@ func Test1xxResponses(t *testing.T) {
 			},
 		},
 	}
-	handler, err := sm.getLoadBalancerServiceHandler(context.Background(), "foobar", config)
+	serviceInfo := runtime.ServiceInfo{Service: &dynamic.Service{LoadBalancer: config}}
+	handler, err := sm.getLoadBalancerServiceHandler(context.Background(), "foobar", &serviceInfo)
 	assert.NoError(t, err)
 
 	frontend := httptest.NewServer(handler)
