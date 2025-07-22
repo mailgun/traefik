@@ -425,14 +425,14 @@
           scheme = "foobar"
           path = "foobar"
           port = 42
-          interval = "foobar"
-          timeout = "foobar"
+          interval = "1s"
+          timeout = "1s"
           hostname = "foobar"
           [http.services.Service0.loadBalancer.healthCheck.headers]
             name0 = "foobar"
             name1 = "foobar"
         [http.services.Service0.loadBalancer.responseForwarding]
-          flushInterval = "foobar"
+          flushInterval = "100ms"
 
 [tcp]
   [tcp.routers]
